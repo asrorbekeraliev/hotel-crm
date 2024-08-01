@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstname String
+  lastname  String
+  email     String   @unique
+  password  String
+  role      Role
+  hireDate  DateTime
+  createdAt DateTime @default(now())
+
+  Booking Booking?
+}
+
+model Room {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  number        Int        @unique
+  type          RoomType
+  class         RoomClass
+  status        RoomStatus
+  pricePerNight Int
+  imagePaths     String[]    
+
+  Booking Booking?
+}
+
+model Booking {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String   @unique @db.ObjectId
+  room         Room     @relation(fields: [roomId], references: [id])
+  roomId       String   @unique @db.ObjectId
+  checkInDate  DateTime @db.Date
+  checkOutDate DateTime @db.Date
+  totalPrice   Int
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  MANAGER
+  RECEPTIONIST
+  STAFF
+  GUEST
+}
+
+enum RoomType {
+  SINGLE
+  DOUBLE
+  TRIPLE
+  QUADRUPLE
+}
+
+enum RoomClass {
+  STANDARD
+  DELUXE
+}
+
+enum RoomStatus {
+  FREE
+  BOOKED
+}
